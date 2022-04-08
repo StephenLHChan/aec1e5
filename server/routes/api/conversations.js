@@ -75,7 +75,7 @@ router.get("/", async (req, res, next) => {
     // sort conversations by createdAt
     conversations.sort(
        (a, b) =>
-         b.messages[b.messages.length - 1].createdAt > a.messages[a.messages.length - 1].createdAt ? 1 : -1
+         b.messages[b.messages.length - 1].createdAt - a.messages[a.messages.length - 1].createdAt
      );
 
     res.json(conversations);
