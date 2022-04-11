@@ -14,7 +14,20 @@ router.post("/", async (req, res, next) => {
 
     // if we already know conversation id, we can save time and just add it to message and return
     if (conversationId) {
+      const conversation = await Conversation.findOne({
+        where: { 
+          id: conversationId,
+        },
+      });
+
       const message = await Message.create({ senderId, text, conversationId });
+
+      if (recipientId === conversation.user1Id) {
+        conversation.user1UnreadCount += 1;
+      } else {
+        conversation.user2UnreadCount += 1;
+      }
+
       return res.json({ message, sender });
     }
     // if we don't have conversation id, find a conversation to make sure it doesn't already exist
@@ -28,6 +41,7 @@ router.post("/", async (req, res, next) => {
       conversation = await Conversation.create({
         user1Id: senderId,
         user2Id: recipientId,
+        user2UnreadCount: 1,
       });
       if (onlineUsers.includes(sender.id)) {
         sender.online = true;
