@@ -130,6 +130,46 @@ const Home = ({ user, logout }) => {
     setActiveConversation(username);
   };
 
+  const updateUnreadCount = async(recipientId) => {
+    await axios.put('/api/conversations/updateUnreadCount', {recipientId,});
+  };
+
+  const markConversationAsRead = useCallback(
+    (conversationId) => {
+      setConversations((prev) => prev.map((convo) => {
+        if (convo.id === conversationId) {
+          const convoCopy = { ...convo };
+          convoCopy.unreadMessagesCount = 0;
+          return convoCopy;
+        } else {
+          return convo;
+        }
+        }),
+      );
+  },
+  [setConversations],
+  );
+
+  const updateReadStatus = async(senderId) =>{
+    try {
+      await axios.put(`/api/messages/updateReadStatus/${senderId}`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+
+  //on click
+  const readMessages = async(conversation) =>  {
+    try {
+      await updateUnreadCount(conversation.otherUser.id);
+      markConversationAsRead(conversation.id);
+      await updateReadStatus(conversation.otherUser.id);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const addOnlineUser = useCallback((id) => {
     setConversations((prev) =>
       prev.map((convo) => {
@@ -219,6 +259,7 @@ const Home = ({ user, logout }) => {
           clearSearchedUsers={clearSearchedUsers}
           addSearchedUsers={addSearchedUsers}
           setActiveChat={setActiveChat}
+          readMessages={readMessages}
         />
         <ActiveChat
           activeConversation={activeConversation}
