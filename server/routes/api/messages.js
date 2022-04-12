@@ -27,6 +27,7 @@ router.post("/", async (req, res, next) => {
       } else {
         conversation.user2UnreadCount += 1;
       }
+      await conversation.save();
 
       return res.json({ message, sender });
     }
