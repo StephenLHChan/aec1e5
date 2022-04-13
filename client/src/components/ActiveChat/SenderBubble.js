@@ -32,7 +32,7 @@ const useStyles = makeStyles(() => ({
   }
 }));
 
-const SenderBubble = ({ messageId, time, text, otherUser, sentMessageAfterLastRead, lastReadMessageId }) => {
+const SenderBubble = ({ messageId, time, text, otherUser, lastReadMessageId }) => {
   const classes = useStyles();
 
   return (
