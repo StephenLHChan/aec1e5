@@ -91,33 +91,6 @@ router.get("/", async (req, res, next) => {
   }
 });
 
-router.put('/updateUnreadCount', async (req, res, next) => {
-  try {
-    if (!req.user) {
-      return res.sendStatus(401);
-    }
-    const senderId = req.user.id;
-    const { recipientId } = req.body;
-
-    const conversation = await Conversation.findConversation(senderId, recipientId);
-
-    if (!conversation) {
-      return res.sendStatus(404);
-    }
-
-    if (senderId === conversation.user1Id) {
-      conversation.user1UnreadCount = 0;
-    } else {
-      conversation.user2UnreadCount = 0;
-    }
-    await conversation.save();
-    
-    res.sendStatus(200);
-
-  } catch (error) {
-    next(error);
-  }
-});
 
 const getLastReadMessageIndex = (messages, userId) => {
   for (let i = messages.length - 1; i >= 0; i--) {
