@@ -52,7 +52,7 @@ const ActiveChat = ({
                   messages={conversation.messages}
                   otherUser={conversation.otherUser}
                   userId={user.id}
-                  lastReadMessageId={conversation.lastReadMessageIndex}
+                  lastReadMessageId={conversation.lastReadMessageId}
                 />
                 <Input
                   otherUser={conversation.otherUser}
