@@ -105,6 +105,7 @@ const Home = ({ user, logout }) => {
           id: message.conversationId,
           otherUser: sender,
           messages: [message],
+          unreadMessagesCount: 1
         };
         newConvo.latestMessageText = message.text;
         setConversations((prev) => [newConvo, ...prev]);
@@ -115,6 +116,9 @@ const Home = ({ user, logout }) => {
           const convoCopy = { ...convo };
           convoCopy.messages = [...convoCopy.messages, message];
           convoCopy.latestMessageText = message.text;
+          if (message.senderId === convo.otherUser.id && convo.otherUser.username !== activeConversation) {
+            convoCopy.unreadMessagesCount += 1;
+          }
           return convoCopy;
         } 
         else {
@@ -123,15 +127,11 @@ const Home = ({ user, logout }) => {
       }),
     );
   },
-  [setConversations],
+  [setConversations, activeConversation],
 );
 
   const setActiveChat = (username) => {
     setActiveConversation(username);
-  };
-
-  const updateUnreadCount = async(recipientId) => {
-    await axios.put('/api/conversations/updateUnreadCount', {recipientId,});
   };
 
   const markConversationAsRead = useCallback(
@@ -150,21 +150,40 @@ const Home = ({ user, logout }) => {
   [setConversations],
   );
 
+  const updateOtherUserLastRead = useCallback(
+    (conversationId) => {
+      setConversations((prev) => prev.map((convo) => {
+        if (convo.id === conversationId){
+          const convoCopy = { ...convo };
+          convoCopy.lastReadMessageId = convoCopy.messages[convoCopy.messages.length - 1].id;
+          return convoCopy;
+        } else {
+          return convo;
+        }
+        }),
+      );
+    },
+  [setConversations],
+  );
+
   const updateReadStatus = async(senderId) =>{
     try {
-      await axios.put(`/api/messages/updateReadStatus/${senderId}`);
+      await axios.put(`/api/messages/read-status/${senderId}`);
     } catch (error) {
       console.error(error);
     }
   };
   
+  const updateLastRead = (conversationId) => {
+    socket.emit('read-message', conversationId)
+  };
 
   //on click
   const readMessages = async(conversation) =>  {
     try {
-      await updateUnreadCount(conversation.otherUser.id);
       markConversationAsRead(conversation.id);
       await updateReadStatus(conversation.otherUser.id);
+      updateLastRead(conversation.id);
     } catch (error) {
       console.error(error);
     }
@@ -205,6 +224,7 @@ const Home = ({ user, logout }) => {
     socket.on('add-online-user', addOnlineUser);
     socket.on('remove-offline-user', removeOfflineUser);
     socket.on('new-message', addMessageToConversation);
+    socket.on('read-message', updateOtherUserLastRead);
 
     return () => {
       // before the component is destroyed
@@ -212,8 +232,9 @@ const Home = ({ user, logout }) => {
       socket.off('add-online-user', addOnlineUser);
       socket.off('remove-offline-user', removeOfflineUser);
       socket.off('new-message', addMessageToConversation);
+      socket.off('read-message', updateOtherUserLastRead);
     };
-  }, [addMessageToConversation, addOnlineUser, removeOfflineUser, socket]);
+  }, [addMessageToConversation, addOnlineUser, removeOfflineUser,updateOtherUserLastRead, socket]);
 
   useEffect(() => {
     // when fetching, prevent redirect
