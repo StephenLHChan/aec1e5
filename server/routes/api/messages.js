@@ -22,13 +22,6 @@ router.post("/", async (req, res, next) => {
 
       const message = await Message.create({ senderId, text, conversationId });
 
-      if (recipientId === conversation.user1Id) {
-        conversation.user1UnreadCount += 1;
-      } else {
-        conversation.user2UnreadCount += 1;
-      }
-      await conversation.save();
-
       return res.json({ message, sender });
     }
     // if we don't have conversation id, find a conversation to make sure it doesn't already exist
@@ -42,7 +35,6 @@ router.post("/", async (req, res, next) => {
       conversation = await Conversation.create({
         user1Id: senderId,
         user2Id: recipientId,
-        user2UnreadCount: 1,
       });
       if (onlineUsers.includes(sender.id)) {
         sender.online = true;
@@ -59,7 +51,7 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-router.put('/updateReadStatus/:senderId', async (req, res, next) => {
+router.put('/read-status/:senderId', async (req, res, next) => {
   try {
     if (!req.user) {
       return res.sendStatus(401);
