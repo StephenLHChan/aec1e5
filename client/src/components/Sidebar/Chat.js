@@ -38,12 +38,11 @@ const Chat = ({ conversation, setActiveChat, readMessages}) => {
       />
       <ChatContent conversation={conversation} />
 
-      {unreadMessagesCount > 0 && (
-         <Badge 
-         color="primary" 
-         badgeContent={unreadMessagesCount}
-         />
-       )}
+      <Badge 
+        color="primary" 
+        badgeContent={unreadMessagesCount}
+      />
+       
     </Box>
   );
 };
